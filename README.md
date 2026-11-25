@@ -2,7 +2,7 @@
 
 A miniature bank security operations platform written in Python (standard library only, 3.10+): a seeded activity simulator with injected attacks, streaming detectors, alert-to-incident correlation with risk scoring, an SQLite case store with triage workflow and SLA tracking, a JSON API, and a web console.
 
-Portfolio and learning project. All customers, IPs, payees and amounts are synthetic.
+Portfolio and learning project, built with AI assistance. The attack simulator is synthetic: all customers, IPs, payees and amounts in it are made up. The `cardfraud` command runs on a real public dataset of card transactions (see `real_data/README.md` for source and licence). No real bank data is used and this is not production bank SOC experience.
 
 ## Pipeline
 ```
@@ -21,6 +21,13 @@ simulator -> detectors (stateful, streaming) -> correlation (union-find on entit
 | Click on a reported phishing URL | `phishing-click` | T1566.002 |
 
 The simulator also produces benign near-misses (a legitimate trip to the UAE, repeated rent payments, ordinary staff lookups, mistyped passwords). The tests require zero false positives on them.
+
+## Real data: card fraud scoring
+```bash
+python3 -m banksoc cardfraud                    # committed sample in real_data/
+python3 -m banksoc cardfraud creditcard.csv     # full 284,807-transaction public dataset
+```
+Logistic regression (standard library only) trained on the first 70% of the timeline and tested on the rest. On the full dataset: ROC AUC 0.98, average precision 0.81, and with a budget of 170 alerts (0.2% of transactions) 87 of 108 frauds are in the queue. Each alert lists the features that raised its score. Details and limits: `docs/card-fraud-results.md`.
 
 ## Run it
 ```bash
@@ -54,7 +61,7 @@ Alerts that share an entity (`user:`, `ip:`, `payee:`, `staff:`) within two hour
 - `runbooks/alert-triage.md` response steps per alert type
 - `reports/sample-incident-report.md` generated report
 - `data/sample_logs.jsonl` sample simulated events
-- `tests/` 22 tests: detector edge cases, window expiry, reproducibility, correlation, API behaviour including error paths
+- `tests/` 29 tests: detector edge cases, window expiry, reproducibility, correlation, API behaviour including error paths
 
 ## Limitations
 Single-process, in-memory sliding windows. Detectors flag once per entity. Thresholds are examples, not tuned to real bank data.

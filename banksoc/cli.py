@@ -2,7 +2,7 @@ import argparse
 import json
 import sys
 
-from . import api, correlate, detectors, evaluate, report, simulator
+from . import api, cardfraud, correlate, detectors, evaluate, report, simulator
 from .store import Store
 
 
@@ -49,6 +49,16 @@ def cmd_report(a):
     sys.exit("no such incident")
 
 
+def cmd_cardfraud(a):
+    rows = cardfraud.load(a.csv)
+    res, model, test, scores = cardfraud.evaluate(rows, budget_fraction=a.budget)
+    print(json.dumps(res, indent=2))
+    print("\nTop alerts in the test period (time in seconds from first transaction):")
+    for al in cardfraud.top_alerts(model, test, scores, a.top):
+        print("  t=%-7d amount=%-9.2f score=%-6.1f fraud=%d  why: %s" % (al["time"], al["amount"], al["score"], al["is_fraud"],
+              ", ".join("%s(%+.1f)" % kv for kv in al["why"])))
+
+
 def cmd_serve(a):
     events, _, incs = _pipeline(a)
     store = Store(a.db)
@@ -70,6 +80,11 @@ def main(argv=None):
     s = sub.add_parser("report")
     s.add_argument("incident", type=int)
     s.set_defaults(fn=cmd_report)
+    s = sub.add_parser("cardfraud", help="score real public card transactions (see real_data/README.md)")
+    s.add_argument("csv", nargs="?", default="real_data/creditcard_sample.csv")
+    s.add_argument("--budget", type=float, default=0.002, help="fraction of test transactions analysts can review")
+    s.add_argument("--top", type=int, default=8)
+    s.set_defaults(fn=cmd_cardfraud)
     s = sub.add_parser("serve")
     s.add_argument("--host", default="127.0.0.1")
     s.add_argument("--port", type=int, default=8080)

@@ -1,20 +1,18 @@
-# Incident report: account takeover, cust007 (simulation)
+# Incident #2: ip:185.220.101.61: credential-stuffing, impossible-travel
 
-- Severity: Critical
-- Detected: 2026-03-02 12:00:40 by rule "Possible account takeover"
+- Severity: critical (score 100)
+- Status: new
+- Window: 2026-03-02T09:10:42 to 2026-03-02T09:13:00
+- Entities: ip:185.220.101.61, user:cust015
+- Tactics: Credential Access, Initial Access
 
-## Summary
-After 6 failed logins, cust007 logged in from Nigeria (never seen before) and 80 seconds later sent 48,000 to a new payee acct9999.
+## Alerts
 
-## Timeline
-| Time | Event |
-|---|---|
-| 12:00:00 to 12:00:25 | 6 failed logins from 203.0.113.99 |
-| 12:00:40 | Successful login from the same IP |
-| 12:02:00 | Transfer of 48,000 to acct9999 |
+- 2026-03-02T09:10:42 **credential-stuffing** [high] 8 accounts failed to log in from 185.220.101.61 in 600s (T1110.004)
+- 2026-03-02T09:13:00 **credential-stuffing** [critical] Successful login for cust015 from credential stuffing source 185.220.101.61 (T1110.004)
+- 2026-03-02T09:13:00 **impossible-travel** [high] cust015 logged in from QA then RU 12 min later (3570 km, 17850 km/h) (T1078)
 
-## Actions (simulated)
-Transfer held, online access locked, customer contacted by phone, IP blocked, fraud team engaged.
+## Actions
 
-## Recommendations
-Step-up authentication for new payees and new countries, transfer limits for new payees, customer alerting by SMS.
+See `runbooks/alert-triage.md` for the response steps for each alert type.
+

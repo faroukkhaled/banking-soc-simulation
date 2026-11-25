@@ -1,6 +1,6 @@
 # Bank SOC Platform (simulation)
 
-A miniature bank security operations platform written in Python (standard library only, 3.9+): a seeded activity simulator with injected attacks, streaming detectors, alert-to-incident correlation with risk scoring, an SQLite case store with triage workflow and SLA tracking, a JSON API, and a web console.
+A miniature bank security operations platform written in Python (standard library only, 3.10+): a seeded activity simulator with injected attacks, streaming detectors, alert-to-incident correlation with risk scoring, an SQLite case store with triage workflow and SLA tracking, a JSON API, and a web console.
 
 Portfolio and learning project. All customers, IPs, payees and amounts are synthetic.
 

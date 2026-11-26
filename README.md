@@ -65,3 +65,29 @@ Alerts that share an entity (`user:`, `ip:`, `payee:`, `staff:`) within two hour
 
 ## Limitations
 Single-process, in-memory sliding windows. Detectors flag once per entity. Thresholds are examples, not tuned to real bank data.
+
+## Architecture
+```mermaid
+flowchart LR
+    A["simulator.py<br/>seeded activity + injected attacks"] --> B["detectors.py<br/>stateful streaming detectors"]
+    B --> C["correlate.py<br/>merge alerts by entity"]
+    C --> D["store.py<br/>SQLite incidents, notes, SLA"]
+    D --> E["api.py JSON API"]
+    E --> F["dashboard.py console"]
+    D --> G["report.py Markdown incident report"]
+    A --> H["evaluate.py<br/>caught / missed / false positives"]
+    B --> H
+    I["real_data/creditcard_sample.csv"] --> J["cardfraud.py<br/>logistic regression scoring"]
+```
+
+Detection rules with severity and mapping: [docs/DETECTIONS.md](docs/DETECTIONS.md).
+
+## Scope and limits
+**Tested**
+- 29 unit tests (detector edge cases, window expiry, reproducibility with a seed, correlation, API behaviour including error paths). They run in GitHub Actions on push. I ran them locally on 26 Nov 2026: all pass. `python3 -m banksoc evaluate` on 26 Nov 2026 reported all 7 injected scenarios caught, none missed, 0 false positives on the benign near-misses.
+- Detectors against the simulator the same author wrote, so the result shows the code does what it was written to do, not that it would catch real fraud. Card fraud scoring on a public sample of the Credit Card Fraud Detection dataset.
+
+**Not tested**
+- real bank traffic, load or concurrency (single process, in-memory windows), the console in a range of browsers, the full 284,807 row card-fraud dataset in this run (figures in `docs/card-fraud-results.md` come from an earlier run).
+
+**Licence:** MIT, see `LICENSE`. Security reports: see `SECURITY.md`.
